@@ -1,6 +1,10 @@
 <?php
 
-use App\Http\Controllers\DynamicFormController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\RegistrationFormController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,6 +22,21 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Route::get('/register/{form_id}', [DynamicFormController::class, 'show']);
-Route::get('/register', [DynamicFormController::class, 'show']);
-Route::post('/register/{form_id}', [DynamicFormController::class, 'submit'])->name('form.submit');
+// registration......................................................
+// Route::get('/register/{form_id}', [RegistrationFormController::class, 'show']);
+Route::get('/register', [RegistrationFormController::class, 'show']);
+Route::post('/register/{form_id}', [RegistrationFormController::class, 'submit'])->name('form.submit');
+// login................................................................
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+
+// Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'nocache'])->group(function () {
+
+    // routes/web.php
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+});
