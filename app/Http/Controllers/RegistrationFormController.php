@@ -184,7 +184,7 @@ class RegistrationFormController extends Controller
 
         return back()->with('success', 'Form submitted successfully!');
     }
- 
+
     public function submit_backup_b4_b64_photo_save(Request $request, $form_id)
     {
         $fields = FormFieldMast::where('form_id', $form_id)
