@@ -3,76 +3,71 @@
 @section('title', 'Login')
 
 @section('content')
-<div class="container">
 
-    {{-- Alerts --}}
-    @if (session('success'))
-    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
+<div class="container-fluid p-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-5">
 
-    @if (session('error'))
-    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-        {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
+            {{-- Alerts --}}
+            @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            @endif
 
-    {{-- Centered Card --}}
-    <div class="row justify-content-center mt-5">
-        <div class="col-md-4 col-lg-4">
+            @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            @endif
 
-            <div class="card shadow border-0">
-                <div class="card-header text-center">
-                    <h4 class="mb-0">Login</h4>
-                </div>
+            <!-- Login Card (same as Contact form box) -->
+            <div class="bg-light rounded p-5 wow fadeIn" data-wow-delay="0.1s">
+                <h5 class="section-title text-center">Welcome Back To</h5>
+                <h1 class="display-6 text-center mb-4">SOULMADE</h1>
+                <hr>
+                <!-- <h5 class="section-title text-center">Login to your account</h5> -->
 
-                <div class="card-body p-4">
+                <form method="POST" action="{{ route('login') }}">
+                    @csrf
 
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
+                    <!-- Username -->
+                    <div class="mb-3">
+                        <input type="text"
+                            name="username"
+                            value="{{ old('username') }}"
+                            placeholder="Username"
+                            class="form-control bg-white border-0 px-4 @error('username') is-invalid @enderror"
+                            style="height: 55px;">
+                        @error('username')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                        <div class="row">
-                            {{-- Username --}}
-                            <div class="mb-3">
-                                <label class="form-label">Username</label>
-                                <input type="text"
-                                    name="username"
-                                    value="{{ old('username') }}"
-                                    class="form-control @error('username') is-invalid @enderror">
+                    <!-- Password -->
+                    <div class="mb-4">
+                        <input type="password"
+                            name="password"
+                            placeholder="Password"
+                            class="form-control bg-white border-0 px-4 @error('password') is-invalid @enderror"
+                            style="height: 55px;">
+                        @error('password')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                                @error('username')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                    <!-- Button -->
+                    <button type="submit" class="btn btn-primary w-100 py-3">
+                        Login
+                    </button>
 
-                            {{-- Password --}}
-                            <div class="mb-3">
-                                <label class="form-label">Password</label>
-                                <input type="password"
-                                    name="password"
-                                    class="form-control @error('password') is-invalid @enderror">
-
-                                @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="text-end mt-4">
-                            <button class="btn btn-primary px-4">
-                                Login
-                            </button>
-                        </div>
-
-                    </form>
-
-                </div>
+                </form>
             </div>
 
         </div>
     </div>
 </div>
+
 @endsection

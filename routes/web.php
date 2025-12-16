@@ -19,12 +19,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('home');
 });
 
 // registration......................................................
 // Route::get('/register/{form_id}', [RegistrationFormController::class, 'show']);
-Route::get('/register', [RegistrationFormController::class, 'show']);
+Route::get('/register', [RegistrationFormController::class, 'show'])->name('register');
 Route::post('/register/{form_id}', [RegistrationFormController::class, 'submit'])->name('form.submit');
 // login................................................................
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
