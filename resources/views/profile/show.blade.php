@@ -21,11 +21,13 @@
                 <div class="col-lg-7">
                     <div class="mb-4 wow fadeIn" data-wow-delay="0.2s">
                         <h5 class="section-title">Profile</h5>
-                        <h1 class="display-3 mb-0">{{ $user->username }}</h1>
+                        <h3 class="display-3 mb-0">{{ $user->username }}
+                             <a href="{{ route('profile.edit') }}" class="btn-sm btn-primary">
+                                    Edit Profile
+                                </a>
+                        </h3>
                     </div>
-                    <p class="mb-4 wow fadeIn" data-wow-delay="0.3s">Nonumy erat diam duo labore clita. Sit magna ipsum dolor sed ea duo at ut. Tempor sit
-                        lorem sit magna ipsum duo. Sit eos dolor ut sea rebum, diam sea rebum lorem kasd ut ipsum dolor est
-                        ipsum. Et stet amet justo amet clita erat, ipsum sed at ipsum eirmod labore lorem.</p>
+                    <p class="mb-4 wow fadeIn" data-wow-delay="0.3s"> {{ $user->introduction }}</p>
                     <div class="row">
                         <div class="col-sm-6 wow fadeIn mb-2" data-wow-delay="0.4s">
                             <div class="bg-light rounded p-2">
@@ -74,7 +76,7 @@
                         </div>
                         <div class="col-sm-6 wow fadeIn mb-2" data-wow-delay="0.4s">
                             <div class="bg-light rounded p-2">
-                                <h6>Qualification: {{ $user->qualification }}</h6>
+                                <h6>Qualification: {{ $user->educational_qualification }}</h6>
                             </div>
                         </div>
                         <div class="col-sm-6 wow fadeIn mb-2" data-wow-delay="0.4s">
@@ -82,13 +84,13 @@
                                 <h6>Occupation: {{ $user->occupation }}</h6>
                             </div>
                         </div>
-                        <div class="col-sm-6 wow fadeIn mb-2" data-wow-delay="0.4s">
+                        <!-- <div class="col-sm-6 wow fadeIn mb-2" data-wow-delay="0.4s">
                             <div class="bg-light rounded p-2">
-                                <button type="submit" class="btn-sm btn-primary">
-                                    View more..
-                                </button>
+                                <a href="{{ route('profile.edit') }}" class="btn-sm btn-primary">
+                                    Edit Profile
+                                </a>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- <div class="col-sm-12 wow fadeIn mt-4" data-wow-delay="0.5s">
                             <div class="bg-light rounded p-4">
@@ -100,6 +102,22 @@
                             </div>
                         </div> -->
                     </div>
+                    <!-- {{-- Identity Proof Preview --}}
+                    <div class="col-sm-6 wow fadeIn mb-2" data-wow-delay="0.4s">
+                        <div class="bg-light rounded p-2">
+                            <h6>Identity Proof:</h6>
+
+                            @if($user->identity_proof)
+                            <img
+                                src="data:image/png;base64,{{ $user->identity_proof }}"
+                                class="img-fluid rounded mt-2"
+                                style="max-height: 120px;">
+                            @else
+                            <span class="text-muted">Not uploaded</span>
+                            @endif
+                        </div>
+                    </div> -->
+
                 </div>
             </div>
         </div>

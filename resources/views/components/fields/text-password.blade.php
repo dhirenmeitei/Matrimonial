@@ -5,10 +5,10 @@
     'readonly' => false, 
     'fieldClass' => '', 
     'required' => false, 
-    'showHide' => true
+    'showHide' => true,
+    'value' => null // ✅ optional current value from DB
 ])
 
-{{-- Hide the field if showHide is false --}}
 @if($showHide)
 <div class="mb-3 {{ $fieldClass }}">
     <label class="form-label fw-semibold">
@@ -20,7 +20,7 @@
     <input
         type="password"
         name="{{ $name }}"
-        value="{{ old($name) }}"
+        value="{{ old($name, $value) }}"
         class="form-control"
         @if($readonly) readonly @endif
         @if($required) required @endif

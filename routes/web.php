@@ -35,8 +35,10 @@ Route::middleware(['auth', 'nocache'])->group(function () {
 
     // routes/web.php
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
     // Profile
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
 });
