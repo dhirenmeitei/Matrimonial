@@ -3,8 +3,11 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FollowController;
+use App\Http\Controllers\FriendController;
 use App\Http\Controllers\RegistrationFormController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TimelineController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,6 +42,26 @@ Route::middleware(['auth', 'nocache'])->group(function () {
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/{id}', [ProfileController::class, 'view'])->name('profile.viewprofile');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Timeline...................................
+    // Timeline
+    Route::get('/timeline', [TimelineController::class, 'index'])->name('timeline');
+
+    // Post
+    Route::post('/post/store', [TimelineController::class, 'store'])->name('post.store');
+
+    // Like
+    Route::post('/post/{id}/like', [TimelineController::class, 'like'])->name('post.like');
+
+    // Comment
+    Route::post('/post/{id}/comment', [TimelineController::class, 'comment'])->name('post.comment');
+
+    // Follow
+    Route::post('/follow/{id}', [FollowController::class, 'toggle'])->name('follow.toggle');
+
+    // Find friends
+    Route::get('/find-friends', [FriendController::class, 'index'])->name('friends.find');
 });

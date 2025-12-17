@@ -80,8 +80,10 @@
                     <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                         @auth
                         <div class="navbar-nav me-auto py-0">
-                            <a href="{{ route('dashboard') }}" class="nav-item nav-link">Dashboard</a>
+                            <!-- <a href="{{ route('dashboard') }}" class="nav-item nav-link">Dashboard</a> -->
+                            <a href="{{ route('timeline') }}" class="nav-item nav-link">Timeline</a>
                             <a href="{{ route('profile.show') }}" class="nav-item nav-link">Profile</a>
+                            <a href="{{ route('friends.find') }}" class="nav-item nav-link">Friends</a>
                             <a href="#" class="nav-item nav-link">Gallary</a>
                             <a href="#" class="nav-item nav-link">Contact</a>
                         </div>

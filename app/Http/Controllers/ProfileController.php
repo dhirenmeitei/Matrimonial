@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\FormFieldMast;
 use App\Models\FormMast;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,15 @@ class ProfileController extends Controller
         $user = auth()->user();
         return view('profile.show', compact('user'));
     }
+
+    public function view($id)
+    {
+        $user = User::with(['posts.likes', 'posts.comments.user'])
+            ->findOrFail($id);
+
+        return view('profile.viewprofile', compact('user'));
+    }
+
 
     public function edit()
     {
