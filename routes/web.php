@@ -48,6 +48,9 @@ Route::middleware(['auth', 'nocache'])->group(function () {
 
     // Timeline...................................
     Route::get('/timeline', [TimelineController::class, 'index'])->name('timeline');
+    Route::post('/timeline/store', [TimelineController::class, 'store'])->name('post.store');
+    Route::post('/timeline/like/{id}', [TimelineController::class, 'like'])->name('post.like');
+    Route::post('/timeline/comment/{id}', [TimelineController::class, 'comment'])->name('post.comment');
 
     // Post
     Route::post('/post/store', [TimelineController::class, 'store'])->name('post.store');
@@ -58,18 +61,15 @@ Route::middleware(['auth', 'nocache'])->group(function () {
     // Comment
     Route::post('/post/{id}/comment', [TimelineController::class, 'comment'])->name('post.comment');
 
-    // Follow
-    Route::post('/follow/{id}', [FollowController::class, 'toggle'])->name('follow.toggle');
-
-
     // Find friends
     Route::get('/find-friends', [FriendController::class, 'index'])->name('friends.find');
 
 
     // folllower
+    Route::post('/follow/{id}', [FollowController::class, 'toggle'])->name('follow.toggle');
     Route::get('/followers/{user}', [FollowController::class, 'followers'])
         ->name('followers.list');
-    Route::post('/follow/{id}', [FollowController::class, 'toggle'])->name('follow.toggle');
+    // Route::post('/follow/{id}', [FollowController::class, 'toggle'])->name('follow.toggle');
 
     Route::get('/follow-requests', [FollowController::class, 'requests'])
         ->name('follow.requests');

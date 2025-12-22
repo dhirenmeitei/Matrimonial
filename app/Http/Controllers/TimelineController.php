@@ -5,18 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\PostComment;
 use App\Models\PostModel;
 use App\Models\PostLikeModel;
-use App\Models\User;
+use App\Models\Follow;
 use Illuminate\Http\Request;
 
 class TimelineController extends Controller
 {
     public function index()
     {
-        $posts = PostModel::with([
-            'user',
-            'likes',
-            'comments.user'
-        ])->latest()->get();
+        $posts = PostModel::with(['user', 'likes', 'comments.user'])
+            ->latest()
+            ->get();
 
         return view('timeline.index', compact('posts'));
     }
@@ -39,15 +37,23 @@ class TimelineController extends Controller
             'photo' => $photoPath
         ]);
 
-        return back();
+        return back()->with('success', 'Post uploaded successfully!');
     }
 
     public function like($id)
     {
-        PostLikeModel::firstOrCreate([
-            'post_id' => $id,
-            'user_id' => auth()->id()
-        ]);
+        $like = PostLikeModel::where('post_id', $id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if ($like) {
+            $like->delete(); // unlike
+        } else {
+            PostLikeModel::create([
+                'post_id' => $id,
+                'user_id' => auth()->id()
+            ]);
+        }
 
         return back();
     }
@@ -55,7 +61,7 @@ class TimelineController extends Controller
     public function comment(Request $request, $id)
     {
         $request->validate([
-            'comment' => 'required'
+            'comment' => 'required|string'
         ]);
 
         PostComment::create([
