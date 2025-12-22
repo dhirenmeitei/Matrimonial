@@ -21,8 +21,8 @@ class ProfileController extends Controller
     public function view($id)
     {
         $user = User::with(['posts.likes', 'posts.comments.user'])
-            ->findOrFail($id);
-
+        ->findOrFail($id);
+        
         return view('profile.viewprofile', compact('user'));
     }
 

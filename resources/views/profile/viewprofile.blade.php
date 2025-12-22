@@ -19,17 +19,66 @@
                     </div>
                 </div>
                 <div class="col-lg-7">
-                    <div class="mb-4 wow fadeIn" data-wow-delay="0.2s">
+                    <!-- <div class="mb-4 wow fadeIn" data-wow-delay="0.2s">
                         <h5 class="section-title">Profile</h5>
                         <h3 class="display-3 mb-0">{{ $user->username }}
+                            <a href="{{ route('followers.list', auth()->user()->id) }}"
+                                class="btn-sm btn-success w-100 text-decoration-none fw-semibold">
+                                Followers ({{ auth()->user()->followers()->count() }})
+                            </a>
                             <form method="POST" action="{{ route('follow.toggle', $user->id) }}">
                                 @csrf
+
+                                @if(auth()->user()->isFollowing($user->id))
+                                <button class="btn btn-sm btn-danger">
+                                    Unfollow
+                                </button>
+                                @else
                                 <button class="btn btn-sm btn-outline-primary">
                                     Follow
                                 </button>
+                                @endif
+
                             </form>
                         </h3>
+                    </div> -->
+                    <div class="mb-4 wow fadeIn" data-wow-delay="0.2s">
+                        <h5 class="section-title">Profile</h5>
+                        {{-- USERNAME --}}
+                        <h3 class="display-3 mb-0">{{ $user->username }}</h3>
+
+                        <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                            {{-- FOLLOWERS BUTTON --}}
+                            <a href="{{ route('followers.list', $user->id) }}"
+                                class="btn btn-success btn-sm fw-semibold">
+                                Followers ({{ $user->followers()->count() }})
+                            </a>
+
+                            {{-- FOLLOW / UNFOLLOW --}}
+                            <form method="POST" action="{{ route('follow.toggle', $user->id) }}">
+                                @csrf
+                                @php
+                                $status = auth()->user()->followStatus($user->id);
+                                @endphp
+
+                                @if($status === 'accepted')
+                                <button class="btn btn-danger btn-sm">Unfollow</button>
+                                @elseif($status === 'pending')
+                                <button class="btn btn-secondary btn-sm" disabled>Requested</button>
+                                @else
+                                <button class="btn btn-outline-primary btn-sm">Follow</button>
+                                @endif
+                            </form>
+
+                            {{-- FOLLOW REQUESTS --}}
+                            <a href="{{ route('follow.requests') }}" class="btn btn-warning btn-sm">
+                                Follow Requests ({{ auth()->user()->followRequests()->count() }})
+                            </a>
+                        </div>
+
+
                     </div>
+
                     <p class="mb-4 wow fadeIn" data-wow-delay="0.3s"> {{ $user->introduction }}</p>
                     <div class="row">
                         <div class="col-sm-6 wow fadeIn mb-2" data-wow-delay="0.4s">

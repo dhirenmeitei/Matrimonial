@@ -42,12 +42,11 @@ Route::middleware(['auth', 'nocache'])->group(function () {
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
-    Route::get('/profile/{id}', [ProfileController::class, 'view'])->name('profile.viewprofile');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/profile/{id}', [ProfileController::class, 'view'])->name('profile.viewprofile');
     Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
 
     // Timeline...................................
-    // Timeline
     Route::get('/timeline', [TimelineController::class, 'index'])->name('timeline');
 
     // Post
@@ -62,6 +61,19 @@ Route::middleware(['auth', 'nocache'])->group(function () {
     // Follow
     Route::post('/follow/{id}', [FollowController::class, 'toggle'])->name('follow.toggle');
 
+
     // Find friends
     Route::get('/find-friends', [FriendController::class, 'index'])->name('friends.find');
+
+
+    // folllower
+    Route::get('/followers/{user}', [FollowController::class, 'followers'])
+        ->name('followers.list');
+    Route::post('/follow/{id}', [FollowController::class, 'toggle'])->name('follow.toggle');
+
+    Route::get('/follow-requests', [FollowController::class, 'requests'])
+        ->name('follow.requests');
+
+    Route::post('/follow-requests/{id}/accept', [FollowController::class, 'accept'])
+        ->name('follow.accept');
 });

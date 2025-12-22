@@ -21,11 +21,42 @@
                 <div class="col-lg-7">
                     <div class="mb-4 wow fadeIn" data-wow-delay="0.2s">
                         <h5 class="section-title">Profile</h5>
-                        <h3 class="display-3 mb-0">{{ $user->username }}
-                             <a href="{{ route('profile.edit') }}" class="btn-sm btn-primary">
-                                    Edit Profile
-                                </a>
-                        </h3>
+                        <h3 class="display-3 mb-2">{{ $user->username }}</h3>
+
+                        <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                            {{-- FOLLOWERS BUTTON --}}
+                            <a href="{{ route('followers.list', $user->id) }}" class="btn btn-success btn-sm fw-semibold">
+                                Followers ({{ $user->followers()->count() }})
+                            </a>
+
+                            {{-- ONLY SHOW FOLLOW / UNFOLLOW IF THIS IS NOT THE LOGGED-IN USER --}}
+                            @if(auth()->id() !== $user->id)
+                            @php
+                            $status = auth()->user()->followStatus($user->id);
+                            @endphp
+
+                            <form method="POST" action="{{ route('follow.toggle', $user->id) }}">
+                                @csrf
+                                @if($status === 'accepted')
+                                <button class="btn btn-danger btn-sm">Unfollow</button>
+                                @elseif($status === 'pending')
+                                <button class="btn btn-secondary btn-sm" disabled>Requested</button>
+                                @else
+                                <button class="btn btn-outline-primary btn-sm">Follow</button>
+                                @endif
+                            </form>
+                            @endif
+
+                            {{-- FOLLOW REQUESTS (for logged-in user only) --}}
+                            @if(auth()->id() === $user->id)
+                            <a href="{{ route('follow.requests') }}" class="btn btn-warning btn-sm">
+                                Follow Requests ({{ auth()->user()->followRequests()->count() }})
+                            </a>
+                            @endif
+                        </div>
+
+
+
                     </div>
                     <p class="mb-4 wow fadeIn" data-wow-delay="0.3s"> {{ $user->introduction }}</p>
                     <div class="row">
@@ -82,6 +113,13 @@
                         <div class="col-sm-6 wow fadeIn mb-2" data-wow-delay="0.4s">
                             <div class="bg-light rounded p-2">
                                 <h6>Occupation: {{ $user->occupation }}</h6>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 wow fadeIn mb-2" data-wow-delay="0.4s">
+                            <div class="rounded p-2">
+                                <a href="{{ route('profile.edit') }}" class="btn-sm btn-primary">
+                                    Edit Profile
+                                </a>
                             </div>
                         </div>
                         <!-- <div class="col-sm-6 wow fadeIn mb-2" data-wow-delay="0.4s">
