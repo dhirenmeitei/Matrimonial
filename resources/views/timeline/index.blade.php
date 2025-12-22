@@ -15,69 +15,89 @@
     @foreach($posts as $post)
     <div class="card mb-4">
 
+        {{-- HEADER --}}
         <div class="card-header d-flex justify-content-between align-items-center">
-            {{-- USERNAME WITH LINK TO PROFILE --}}
             <strong>
                 <a href="{{ route('profile.viewprofile', $post->user->id) }}" class="text-decoration-none">
                     {{ $post->user->username }}
                 </a>
             </strong>
 
-            @if(auth()->id() !== $post->user->id)
-            @php
-            $status = auth()->user()->followStatus($post->user->id);
-            $pendingRequest = \App\Models\Follow::where('follower_id', $post->user->id)
-            ->where('following_id', auth()->id())
-            ->where('status', 'pending')
-            ->first();
-            @endphp
+            <div class="d-flex gap-2 align-items-center">
 
-            @if($pendingRequest)
-            <form method="POST" action="{{ route('follow.accept', $pendingRequest->id) }}">
-                @csrf
-                <button class="btn btn-sm btn-success">Accept Request</button>
-            </form>
-            @else
-            <form method="POST" action="{{ route('follow.toggle', $post->user->id) }}">
-                @csrf
-                @if($status === 'accepted')
-                <button class="btn btn-sm btn-danger">Unfollow</button>
-                @elseif($status === 'pending')
-                <button class="btn btn-sm btn-secondary" disabled>Requested</button>
+                {{-- DELETE BUTTON (ONLY OWNER) --}}
+                @if(auth()->id() === $post->user_id)
+                <form method="POST" action="{{ route('post.destroy', $post->id) }}"
+                    onsubmit="return confirm('Are you sure you want to delete this post?')">
+                    @csrf
+                    @method('DELETE')
+                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
                 @else
-                <button class="btn btn-sm btn-outline-primary">Follow</button>
+                {{-- FOLLOW / ACCEPT --}}
+                @php
+                $status = auth()->user()->followStatus($post->user->id);
+                $pendingRequest = \App\Models\Follow::where('follower_id', $post->user->id)
+                ->where('following_id', auth()->id())
+                ->where('status', 'pending')
+                ->first();
+                @endphp
+
+                @if($pendingRequest)
+                <form method="POST" action="{{ route('follow.accept', $pendingRequest->id) }}">
+                    @csrf
+                    <button class="btn btn-sm btn-success">Accept</button>
+                </form>
+                @else
+                <form method="POST" action="{{ route('follow.toggle', $post->user->id) }}">
+                    @csrf
+                    @if($status === 'accepted')
+                    <button class="btn btn-sm btn-danger">Unfollow</button>
+                    @elseif($status === 'pending')
+                    <button class="btn btn-sm btn-secondary" disabled>Requested</button>
+                    @else
+                    <button class="btn btn-sm btn-outline-primary">Follow</button>
+                    @endif
+                </form>
                 @endif
-            </form>
-            @endif
-            @endif
+                @endif
+
+            </div>
         </div>
 
+        {{-- BODY --}}
         <div class="card-body">
             @if($post->content)
             <p>{{ $post->content }}</p>
             @endif
 
             @if($post->photo)
-            <img src="{{ asset('storage/'.$post->photo) }}" class="img-fluid mb-2">
+            <img src="{{ asset('storage/'.$post->photo) }}" class="img-fluid mb-2 rounded">
             @endif
 
             {{-- LIKE --}}
             @php
             $liked = $post->likes->contains('user_id', auth()->id());
             @endphp
+            <p>
             <form method="POST" action="{{ route('post.like', $post->id) }}" class="d-inline">
                 @csrf
                 <button class="btn btn-link fs-4 {{ $liked ? 'text-danger' : 'text-secondary' }}">❤️</button>
             </form>
 
-            {{-- CLICKABLE LIKE COUNT --}}
-            <span class="ms-2 text-primary" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#likesModal{{ $post->id }}">
+            {{-- LIKE COUNT (CLICKABLE) --}}
+            <span class="text-primary ms-1" style="cursor:pointer"
+                data-bs-toggle="modal" data-bs-target="#likesModal{{ $post->id }}">
                 {{ $post->likes->count() }} likes
             </span>
+            </p>
+
+
 
             {{-- COMMENTS --}}
+            <hr>
             @foreach($post->comments as $comment)
-            <div>
+            <div class="mb-1">
                 <strong>
                     <a href="{{ route('profile.viewprofile', $comment->user->id) }}" class="text-decoration-none">
                         {{ $comment->user->username }}
@@ -97,16 +117,16 @@
     </div>
 
     {{-- LIKES MODAL --}}
-    <div class="modal fade" id="likesModal{{ $post->id }}" tabindex="-1" aria-labelledby="likesModalLabel{{ $post->id }}" aria-hidden="true">
-        <div class="modal-dialog">
+    <div class="modal fade" id="likesModal{{ $post->id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="likesModalLabel{{ $post->id }}">Liked by</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title">Liked by</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     @if($post->likes->isEmpty())
-                    <p class="text-muted">No likes yet</p>
+                    <p class="text-muted">0</p>
                     @else
                     <ul class="list-group">
                         @foreach($post->likes as $like)

@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\FriendController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\RegistrationFormController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TimelineController;
@@ -54,12 +55,11 @@ Route::middleware(['auth', 'nocache'])->group(function () {
 
     // Post
     Route::post('/post/store', [TimelineController::class, 'store'])->name('post.store');
-
-    // Like
     Route::post('/post/{id}/like', [TimelineController::class, 'like'])->name('post.like');
-
-    // Comment
+    Route::delete('/post/{post}', [PostController::class, 'destroy'])->name('post.destroy');
     Route::post('/post/{id}/comment', [TimelineController::class, 'comment'])->name('post.comment');
+
+
 
     // Find friends
     Route::get('/find-friends', [FriendController::class, 'index'])->name('friends.find');
