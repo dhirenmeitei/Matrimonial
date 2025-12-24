@@ -84,8 +84,8 @@
                             <a href="{{ route('timeline') }}" class="nav-item nav-link">Timeline</a>
                             <a href="{{ route('profile.show') }}" class="nav-item nav-link">Profile</a>
                             <a href="{{ route('friends.find') }}" class="nav-item nav-link">Friends</a>
-                            <a href="#" class="nav-item nav-link">Gallary</a>
-                            <a href="#" class="nav-item nav-link">Contact</a>
+                            <a href="{{ route('gallery.index') }}" class="nav-item nav-link">Gallary</a>
+                            <a href="{{ route('messages.index') }}" class="nav-item nav-link">Message</a>
                         </div>
                         @endauth
 

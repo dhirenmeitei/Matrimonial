@@ -5,6 +5,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\FriendController;
+use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\RegistrationFormController;
 use App\Http\Controllers\ProfileController;
@@ -53,12 +55,20 @@ Route::middleware(['auth', 'nocache'])->group(function () {
     Route::post('/timeline/like/{id}', [TimelineController::class, 'like'])->name('post.like');
     Route::post('/timeline/comment/{id}', [TimelineController::class, 'comment'])->name('post.comment');
 
+    // gallery
+    Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
+
     // Post
+    Route::get('/post/{post}', [PostController::class, 'show'])->name('post.show');
     Route::post('/post/store', [TimelineController::class, 'store'])->name('post.store');
     Route::post('/post/{id}/like', [TimelineController::class, 'like'])->name('post.like');
     Route::delete('/post/{post}', [PostController::class, 'destroy'])->name('post.destroy');
     Route::post('/post/{id}/comment', [TimelineController::class, 'comment'])->name('post.comment');
 
+
+    // comment
+    Route::delete('/comment/{comment}', [TimelineController::class, 'deleteComment'])
+        ->name('comment.delete');
 
 
     // Find friends
@@ -76,4 +86,21 @@ Route::middleware(['auth', 'nocache'])->group(function () {
 
     Route::post('/follow-requests/{id}/accept', [FollowController::class, 'accept'])
         ->name('follow.accept');
+
+
+    // message
+    Route::get('/messages/{user}/ajax', [MessageController::class, 'ajaxMessages'])
+        ->name('messages.ajax');
+
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
+
+    Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
+    Route::put('/messages/{message}', [MessageController::class, 'update'])->name('messages.update');
+    Route::delete('/messages/{message}', [MessageController::class, 'destroy'])->name('messages.destroy');
+
+    Route::post('/messages/{message}/like', [MessageController::class, 'like'])->name('messages.like');
+
+    Route::get('/messages/{user}/ajax', [MessageController::class, 'ajaxMessages']);
+
 });

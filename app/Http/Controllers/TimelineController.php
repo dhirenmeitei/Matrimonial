@@ -72,4 +72,16 @@ class TimelineController extends Controller
 
         return back();
     }
+
+    public function deleteComment(PostComment $comment)
+    {
+        // Allow only comment owner
+        if ($comment->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $comment->delete();
+
+        return back()->with('success', 'Comment deleted');
+    }
 }
