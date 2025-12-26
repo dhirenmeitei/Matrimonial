@@ -118,4 +118,31 @@ class User extends Authenticatable
             ->where('following_id', $userId)
             ->value('status'); // pending / accepted / null
     }
+
+
+    // message
+    /**
+     * Get the count of unread messages from this user to the given user (usually auth user)
+     */
+    public function unreadMessagesCount($authUserId)
+    {
+        return $this->sentMessages()
+            ->whereDoesntHave('reads', function ($q) use ($authUserId) {
+                $q->where('user_id', $authUserId);
+            })
+            ->count();
+    }
+
+    /**
+     * Relationship: Messages sent by this user
+     */
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class, 'receiver_id');
+    }
 }

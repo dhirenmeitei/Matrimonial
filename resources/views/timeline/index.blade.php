@@ -61,12 +61,12 @@
                 </form>
                 @endif
                 @endif
-
             </div>
         </div>
 
         {{-- BODY --}}
         <div class="card-body">
+
             @if($post->content)
             <p>{{ $post->content }}</p>
             @endif
@@ -79,40 +79,64 @@
             @php
             $liked = $post->likes->contains('user_id', auth()->id());
             @endphp
-            <p>
+
             <form method="POST" action="{{ route('post.like', $post->id) }}" class="d-inline">
                 @csrf
                 <button class="btn btn-link fs-4 {{ $liked ? 'text-danger' : 'text-secondary' }}">❤️</button>
             </form>
 
-            {{-- LIKE COUNT (CLICKABLE) --}}
+            {{-- LIKE COUNT --}}
             <span class="text-primary ms-1" style="cursor:pointer"
                 data-bs-toggle="modal" data-bs-target="#likesModal{{ $post->id }}">
                 {{ $post->likes->count() }} likes
             </span>
-            </p>
-
-
 
             {{-- COMMENTS --}}
             <hr>
+            <hr>
+
             @foreach($post->comments as $comment)
-            <div class="mb-1">
-                <strong>
-                    <a href="{{ route('profile.viewprofile', $comment->user->id) }}" class="text-decoration-none">
-                        {{ $comment->user->username }}
-                    </a>
-                </strong>
-                {{ $comment->comment }}
-                <br>
-                <small class="text-muted">{{ $comment->created_at->format('d M Y h:i A') }}</small>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+
+                <div>
+                    <strong>
+                        <a href="{{ route('profile.viewprofile', $comment->user->id) }}"
+                            class="text-decoration-none">
+                            {{ $comment->user->username }}
+                        </a>
+                    </strong>
+                    {{ $comment->comment }}
+                    <br>
+                    <small class="text-muted">
+                        {{ $comment->created_at ?? '' }}
+                    </small>
+                </div>
+
+                {{-- DELETE COMMENT (ONLY OWNER) --}}
+                @if(auth()->id() === $comment->user_id)
+                <form method="POST"
+                    action="{{ route('comment.delete', $comment->id) }}"
+                    onsubmit="return confirm('Delete this comment?')">
+                    @csrf
+                    @method('DELETE')
+                    <button class="btn btn-xl btn-link text-danger p-0">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+                @endif
+
             </div>
             @endforeach
 
-            <form method="POST" action="{{ route('post.comment', $post->id) }}" class="mt-2">
+
+            {{-- COMMENT FORM (FIXED: BUTTON ADDED) --}}
+            <form method="POST" action="{{ route('post.comment', $post->id) }}" class="mt-2 d-flex gap-2">
                 @csrf
                 <input type="text" name="comment" class="form-control" placeholder="Write a comment">
+                <button class="btn btn-primary btn-sm">Post</button>
             </form>
+
+
         </div>
     </div>
 
@@ -126,7 +150,7 @@
                 </div>
                 <div class="modal-body">
                     @if($post->likes->isEmpty())
-                    <p class="text-muted">0</p>
+                    <p class="text-muted">No likes yet</p>
                     @else
                     <ul class="list-group">
                         @foreach($post->likes as $like)
@@ -142,7 +166,7 @@
             </div>
         </div>
     </div>
-    @endforeach
 
+    @endforeach
 </div>
 @endsection

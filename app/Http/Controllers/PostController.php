@@ -7,6 +7,14 @@ use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
+    public function show(PostModel $post)
+    {
+        $post->load(['user', 'likes.user', 'comments.user']);
+
+        return view('posts.show', compact('post'));
+    }
+    
+
     //
     public function destroy(PostModel $post)
     {
