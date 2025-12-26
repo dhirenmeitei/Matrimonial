@@ -101,6 +101,4 @@ Route::middleware(['auth', 'nocache'])->group(function () {
 
     Route::post('/messages/{message}/like', [MessageController::class, 'like'])->name('messages.like');
 
-    Route::get('/messages/{user}/ajax', [MessageController::class, 'ajaxMessages']);
-
 });

@@ -96,13 +96,22 @@ class MessageController extends Controller
             $filePath = $request->file('file')->store('messages', 'public');
         }
 
+        // Message::create([
+        //     'conversation_id' => $conversation->id,
+        //     'sender_id' => auth()->id(),
+        //     'message' => $request->message,
+        //     'file_path' => $filePath,
+        //     'file_type' => $type
+        // ]);
         Message::create([
             'conversation_id' => $conversation->id,
             'sender_id' => auth()->id(),
+            'receiver_id' => $user->id,
             'message' => $request->message,
             'file_path' => $filePath,
             'file_type' => $type
         ]);
+
 
         return back();
     }
@@ -135,25 +144,33 @@ class MessageController extends Controller
     }
 
     // Add this method to your MessageController
-    // Add this method to your MessageController
-    public function ajaxMessages(User $user)
+    public function ajaxMessages(User $user, Request $request)
     {
         $conversation = Conversation::firstOrCreate([
             'user_one' => min(auth()->id(), $user->id),
-            'user_two' => max(auth()->id(), $user->id)
+            'user_two' => max(auth()->id(), $user->id),
         ]);
 
-        $messages = $conversation->messages()->with(['sender', 'likes', 'reads'])->get();
+        // Get last message ID from request
+        $lastId = (int) $request->get('after_id', 0);
 
-        // Mark messages as read
+        // Fetch messages newer than last_id
+        $messages = Message::where('conversation_id', $conversation->id)
+            ->when($lastId, fn($q) => $q->where('id', '>', $lastId))
+            ->with(['sender', 'reads'])
+            ->orderBy('id')
+            ->get();
+
+        // Mark messages as read for current user
         foreach ($messages as $msg) {
-            if ($msg->sender_id != auth()->id()) {
-                $msg->reads()->firstOrCreate([
-                    'user_id' => auth()->id()
-                ]);
+            if ($msg->sender_id !== auth()->id()) {
+                $msg->reads()->firstOrCreate(['user_id' => auth()->id()], ['read_at' => now()]);
             }
         }
 
-        return view('messages.partials.ajax-messages', compact('messages', 'user'))->render();
+        return response()->json([
+            'html' => view('messages.partials.ajax-messages', compact('messages'))->render(),
+            'last_id' => optional($messages->last())->id ?? $lastId,
+        ]);
     }
 }
