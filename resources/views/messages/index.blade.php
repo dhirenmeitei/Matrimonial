@@ -15,17 +15,16 @@
     <div class="d-flex overflow-auto mb-3">
         @forelse($users as $user)
         <div class="text-center position-relative me-3">
+            <a href="{{ route('messages.show', $user->id) }}" class="btn btn-sm">
             <img src="{{ $user->photo ? asset('storage/'.$user->photo) : asset('img/default-user.png') }}"
                 class="rounded-circle" width="60" height="60">
 
             <div class="mt-1">{{ $user->username }}
-                <a href="{{ route('messages.show', $user->id) }}" class="btn btn-sm">
-                    <i class="bi bi-chat-quote-fill text-success"></i>
-
-                </a>
+                
+                    <!-- <i class="bi bi-chat-quote-fill text-success"></i> -->
+                
             </div>
-
-
+            </a>
 
             @php
             $unread = $user->unreadMessagesCount(auth()->id());

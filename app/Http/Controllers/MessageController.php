@@ -11,77 +11,71 @@ use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
-    public function index(Request $request)
-    {
-        $query = User::where('id', '!=', auth()->id());
+   public function index(Request $request)
+{
+    $users = User::where('id', '!=', auth()->id())
+        ->when($request->search, function($query, $search){
+            $query->where('username', 'like', '%' . $search . '%');
+        })
+        ->get();
 
-        if ($request->search) {
-            $query->where('username', 'like', '%' . $request->search . '%');
-        }
+    return view('messages.index', compact('users'));
+}
 
-        $users = $query->get();
+// AJAX friends search
+public function ajaxFriends(Request $request)
+{
+    $users = User::where('id', '!=', auth()->id())
+        ->when($request->search, fn($q, $search) => $q->where('username', 'like', "%$search%"))
+        ->get();
 
-        return view('messages.index', compact('users'));
-    }
+    return view('messages.partials.friends-list', compact('users'));
+}
 
 
-    // public function show_backup(User $user)
-    // {
-    //     $conversation = Conversation::firstOrCreate([
-    //         'user_one' => min(auth()->id(), $user->id),
-    //         'user_two' => max(auth()->id(), $user->id)
-    //     ]);
-
-    //     $messages = $conversation->messages()->with(['sender', 'likes', 'reads'])->get();
-
-    //     foreach ($messages as $msg) {
-    //         if ($msg->sender_id != auth()->id()) {
-    //             $msg->reads()->firstOrCreate([
-    //                 'user_id' => auth()->id()
-    //             ]);
-    //         }
-    //     }
-
-    //     // Fetch all users for chat list
-    //     $users = User::where('id', '!=', auth()->id())->get();
-
-    //     return view('messages.show', compact('user', 'messages', 'conversation', 'users'));
-    // }
     public function show(User $user, Request $request)
     {
-        // Get or create the conversation
         $conversation = Conversation::firstOrCreate([
             'user_one' => min(auth()->id(), $user->id),
             'user_two' => max(auth()->id(), $user->id)
         ]);
 
-        // Get messages with relations
-        $messages = $conversation->messages()->with(['sender', 'likes', 'reads'])->get();
+        $me = auth()->id();
 
-        // Mark messages as read for current user
-        foreach ($messages as $msg) {
-            if ($msg->sender_id != auth()->id()) {
-                $msg->reads()->firstOrCreate(['user_id' => auth()->id()]);
-            }
-        }
+        $messages = Message::where('conversation_id', $conversation->id)
+            ->with(['sender', 'reads'])
+            ->orderBy('id')
+            ->get()
+            ->filter(function ($msg) use ($me) {
+                // Hide only if receiver deleted
+                if ($msg->is_deleted) {
+                    if ($msg->deleted_by == $msg->sender_id) {
+                        return true; // deleted by sender → show "Message deleted"
+                    }
+                    if ($msg->deleted_by == $me && $me != $msg->sender_id) {
+                        return true; // deleted by receiver → show "Message deleted"
+                    }
+                    if ($msg->deleted_by != $me) {
+                        return true; // message is fine for others
+                    }
+                    return false; // receiver deleted → hide for that receiver only
+                }
+                return true; // normal message
+            });
 
-        // Handle AJAX request for auto-refresh
         if ($request->ajax()) {
-            $html = view('messages.partials.ajax-messages', compact('messages', 'user'))->render();
-            return response()->json(['html' => $html]);
+            return response()->json([
+                'html' => view('messages.partials.ajax-messages', compact('messages'))->render(),
+                'last_id' => optional($messages->last())->id ?? 0
+            ]);
         }
 
-        // Fetch all users for chat list
-        $users = User::where('id', '!=', auth()->id())->get();
-
-        return view('messages.show', compact('user', 'messages', 'conversation', 'users'));
+        $users = User::where('id', '!=', $me)->get();
+        return view('messages.show', compact('user', 'messages', 'users'));
     }
-
-
 
     public function store(Request $request, User $user)
     {
-        // Get or create the conversation between the two users
         $conversation = Conversation::firstOrCreate([
             'user_one' => min(auth()->id(), $user->id),
             'user_two' => max(auth()->id(), $user->id)
@@ -96,13 +90,6 @@ class MessageController extends Controller
             $filePath = $request->file('file')->store('messages', 'public');
         }
 
-        // Message::create([
-        //     'conversation_id' => $conversation->id,
-        //     'sender_id' => auth()->id(),
-        //     'message' => $request->message,
-        //     'file_path' => $filePath,
-        //     'file_type' => $type
-        // ]);
         Message::create([
             'conversation_id' => $conversation->id,
             'sender_id' => auth()->id(),
@@ -112,38 +99,32 @@ class MessageController extends Controller
             'file_type' => $type
         ]);
 
-
-        return back();
-    }
-
-
-    public function like(Message $message)
-    {
-        MessageLike::firstOrCreate([
-            'message_id' => $message->id,
-            'user_id' => auth()->id()
-        ]);
-        return back();
-    }
-
-    public function update(Request $request, Message $message)
-    {
-        abort_if($message->sender_id !== auth()->id(), 403);
-        $message->update([
-            'message' => $request->message,
-            'edited_at' => now()
-        ]);
         return back();
     }
 
     public function destroy(Message $message)
     {
-        abort_if($message->sender_id !== auth()->id(), 403);
-        $message->update(['is_deleted' => true]);
-        return back();
+        $me = auth()->id();
+
+        if ($message->sender_id === $me) {
+            // Sender deletes → for everyone
+            $message->update([
+                'is_deleted' => true,
+                'deleted_by' => $me
+            ]);
+        } elseif ($message->receiver_id === $me) {
+            // Receiver deletes → only for self
+            $message->update([
+                'is_deleted' => true,
+                'deleted_by' => $me
+            ]);
+        } else {
+            abort(403);
+        }
+
+        return response()->json(['success' => true]);
     }
 
-    // Add this method to your MessageController
     public function ajaxMessages(User $user, Request $request)
     {
         $conversation = Conversation::firstOrCreate([
@@ -151,26 +132,33 @@ class MessageController extends Controller
             'user_two' => max(auth()->id(), $user->id),
         ]);
 
-        // Get last message ID from request
+        $me = auth()->id();
         $lastId = (int) $request->get('after_id', 0);
 
-        // Fetch messages newer than last_id
         $messages = Message::where('conversation_id', $conversation->id)
             ->when($lastId, fn($q) => $q->where('id', '>', $lastId))
             ->with(['sender', 'reads'])
             ->orderBy('id')
-            ->get();
+            ->get()
+            ->filter(function ($msg) use ($me) {
+                if ($msg->is_deleted) {
+                    if ($msg->deleted_by == $msg->sender_id) return true; // deleted by sender
+                    if ($msg->deleted_by == $me && $me != $msg->sender_id) return true; // deleted by receiver
+                    if ($msg->deleted_by != $me) return true; // others see it
+                    return false; // hide if receiver deleted
+                }
+                return true;
+            });
 
-        // Mark messages as read for current user
         foreach ($messages as $msg) {
-            if ($msg->sender_id !== auth()->id()) {
-                $msg->reads()->firstOrCreate(['user_id' => auth()->id()], ['read_at' => now()]);
+            if ($msg->sender_id !== $me) {
+                $msg->reads()->firstOrCreate(['user_id' => $me], ['read_at' => now()]);
             }
         }
 
         return response()->json([
             'html' => view('messages.partials.ajax-messages', compact('messages'))->render(),
-            'last_id' => optional($messages->last())->id ?? $lastId,
+            'last_id' => optional($messages->last())->id ?? $lastId
         ]);
     }
 }

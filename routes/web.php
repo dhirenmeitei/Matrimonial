@@ -100,5 +100,7 @@ Route::middleware(['auth', 'nocache'])->group(function () {
     Route::delete('/messages/{message}', [MessageController::class, 'destroy'])->name('messages.destroy');
 
     Route::post('/messages/{message}/like', [MessageController::class, 'like'])->name('messages.like');
+    Route::get('/messages/ajax/friends', [MessageController::class, 'ajaxFriends'])->name('messages.ajax.friends');
+
 
 });
