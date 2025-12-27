@@ -17,7 +17,9 @@ class Message extends Model
         'file_path',
         'file_type',
         'is_deleted',
-        'edited_at'
+        'edited_at',
+        'is_read',
+        'deleted_by'
     ];
 
     public function sender()
@@ -30,13 +32,19 @@ class Message extends Model
         return $this->belongsTo(User::class, 'receiver_id');
     }
 
-    public function reads()
-    {
-        return $this->hasMany(MessageRead::class);
-    }
-
     public function likes()
     {
         return $this->hasMany(MessageLike::class);
     }
+
+public function reads()
+{
+    return $this->hasMany(MessageRead::class);
+}
+
+public function getIsReadAttribute()
+{
+    return $this->reads->isNotEmpty();
+}
+
 }
