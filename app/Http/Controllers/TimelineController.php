@@ -40,23 +40,46 @@ class TimelineController extends Controller
         return back()->with('success', 'Post uploaded successfully!');
     }
 
+    // public function like_old($id)
+    // {
+    //     $like = PostLikeModel::where('post_id', $id)
+    //         ->where('user_id', auth()->id())
+    //         ->first();
+
+    //     if ($like) {
+    //         $like->delete(); // unlike
+    //     } else {
+    //         PostLikeModel::create([
+    //             'post_id' => $id,
+    //             'user_id' => auth()->id()
+    //         ]);
+    //     }
+
+    //     return back();
+    // }
     public function like($id)
-    {
-        $like = PostLikeModel::where('post_id', $id)
-            ->where('user_id', auth()->id())
-            ->first();
+{
+    $like = PostLikeModel::where('post_id', $id)
+        ->where('user_id', auth()->id())
+        ->first();
 
-        if ($like) {
-            $like->delete(); // unlike
-        } else {
-            PostLikeModel::create([
-                'post_id' => $id,
-                'user_id' => auth()->id()
-            ]);
-        }
-
-        return back();
+    if ($like) {
+        $like->delete();
+        $liked = false;
+    } else {
+        PostLikeModel::create([
+            'post_id' => $id,
+            'user_id' => auth()->id()
+        ]);
+        $liked = true;
     }
+
+    return response()->json([
+        'liked' => $liked,
+        'count' => PostLikeModel::where('post_id', $id)->count()
+    ]);
+}
+
 
     public function comment(Request $request, $id)
     {
