@@ -124,14 +124,22 @@ class User extends Authenticatable
     /**
      * Get the count of unread messages from this user to the given user (usually auth user)
      */
+    // public function unreadMessagesCount($authUserId)
+    // {
+    //     return $this->sentMessages()
+    //         ->whereDoesntHave('reads', function ($q) use ($authUserId) {
+    //             $q->where('user_id', $authUserId);
+    //         })
+    //         ->count();
+    // }
     public function unreadMessagesCount($authUserId)
-    {
-        return $this->sentMessages()
-            ->whereDoesntHave('reads', function ($q) use ($authUserId) {
-                $q->where('user_id', $authUserId);
-            })
-            ->count();
-    }
+{
+    return $this->sentMessages()
+        ->where('receiver_id', $authUserId)
+        ->where('is_read', false)
+        ->count();
+}
+
 
     /**
      * Relationship: Messages sent by this user
