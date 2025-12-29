@@ -101,6 +101,7 @@ Route::middleware(['auth', 'nocache'])->group(function () {
 
     Route::post('/messages/{message}/like', [MessageController::class, 'like'])->name('messages.like');
     Route::get('/messages/ajax/friends', [MessageController::class, 'ajaxFriends'])->name('messages.ajax.friends');
+Route::get('/messages/read-status', [MessageController::class, 'readStatus'])->name('messages.read-status');
 
 
 });

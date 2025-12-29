@@ -12,7 +12,7 @@
     </form>
 
     {{-- FRIEND LIST HORIZONTAL SCROLL --}}
-    <div class="d-flex overflow-auto mb-3">
+    <div class="d-flex overflow-auto mb-3 p-4">
         @forelse($users as $user)
         <div class="text-center position-relative me-3">
             <a href="{{ route('messages.show', $user->id) }}" class="btn btn-sm">

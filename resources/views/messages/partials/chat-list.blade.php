@@ -1,4 +1,4 @@
-<h5 class="mb-3">Friends</h5>
+<!-- <h5 class="mb-3">Friends</h5> -->
 
 <div class="input-group mb-3">
     <input type="text" id="friendSearch" class="form-control" placeholder="Search friends...">

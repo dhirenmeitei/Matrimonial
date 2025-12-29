@@ -1,17 +1,2 @@
 /* @import "bootstrap/dist/css/bootstrap.min.css"; */
 
-/* Smooth horizontal scrolling */
-#friendsList {
-    scroll-behavior: smooth;
-}
-
-/* Optional: hide scrollbar on mobile */
-@media (max-width: 767px) {
-    #friendsList::-webkit-scrollbar {
-        display: none;
-    }
-    #friendsList {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-}

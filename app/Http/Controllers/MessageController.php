@@ -11,26 +11,26 @@ use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
-   public function index(Request $request)
-{
-    $users = User::where('id', '!=', auth()->id())
-        ->when($request->search, function($query, $search){
-            $query->where('username', 'like', '%' . $search . '%');
-        })
-        ->get();
+    public function index(Request $request)
+    {
+        $users = User::where('id', '!=', auth()->id())
+            ->when($request->search, function ($query, $search) {
+                $query->where('username', 'like', '%' . $search . '%');
+            })
+            ->get();
 
-    return view('messages.index', compact('users'));
-}
+        return view('messages.index', compact('users'));
+    }
 
-// AJAX friends search
-public function ajaxFriends(Request $request)
-{
-    $users = User::where('id', '!=', auth()->id())
-        ->when($request->search, fn($q, $search) => $q->where('username', 'like', "%$search%"))
-        ->get();
+    // AJAX friends search
+    public function ajaxFriends(Request $request)
+    {
+        $users = User::where('id', '!=', auth()->id())
+            ->when($request->search, fn($q, $search) => $q->where('username', 'like', "%$search%"))
+            ->get();
 
-    return view('messages.partials.friends-list', compact('users'));
-}
+        return view('messages.partials.friends-list', compact('users'));
+    }
 
 
     public function show(User $user, Request $request)
@@ -43,7 +43,8 @@ public function ajaxFriends(Request $request)
         $me = auth()->id();
 
         $messages = Message::where('conversation_id', $conversation->id)
-            ->with(['sender', 'reads'])
+            ->with('sender')
+            // ->with(['sender', 'reads'])
             ->orderBy('id')
             ->get()
             ->filter(function ($msg) use ($me) {
@@ -90,7 +91,7 @@ public function ajaxFriends(Request $request)
             $filePath = $request->file('file')->store('messages', 'public');
         }
 
-        Message::create([
+        $message = Message::create([
             'conversation_id' => $conversation->id,
             'sender_id' => auth()->id(),
             'receiver_id' => $user->id,
@@ -99,7 +100,10 @@ public function ajaxFriends(Request $request)
             'file_type' => $type
         ]);
 
-        return back();
+        return response()->json([
+            'success' => true,
+            'message_id' => $message->id
+        ]);
     }
 
     public function destroy(Message $message)
@@ -135,25 +139,29 @@ public function ajaxFriends(Request $request)
         $me = auth()->id();
         $lastId = (int) $request->get('after_id', 0);
 
+        // Fetch messages after lastId
         $messages = Message::where('conversation_id', $conversation->id)
             ->when($lastId, fn($q) => $q->where('id', '>', $lastId))
             ->with(['sender', 'reads'])
             ->orderBy('id')
-            ->get()
-            ->filter(function ($msg) use ($me) {
-                if ($msg->is_deleted) {
-                    if ($msg->deleted_by == $msg->sender_id) return true; // deleted by sender
-                    if ($msg->deleted_by == $me && $me != $msg->sender_id) return true; // deleted by receiver
-                    if ($msg->deleted_by != $me) return true; // others see it
-                    return false; // hide if receiver deleted
-                }
-                return true;
-            });
+            ->get();
 
-        foreach ($messages as $msg) {
-            if ($msg->sender_id !== $me) {
-                $msg->reads()->firstOrCreate(['user_id' => $me], ['read_at' => now()]);
+        // Filter deleted messages
+        $messages = $messages->filter(
+            fn($msg) =>
+            !$msg->is_deleted ||
+            $msg->deleted_by == $msg->sender_id ||
+            $msg->deleted_by != $me ||
+            ($msg->deleted_by == $me && $me != $msg->sender_id)
+        );
+
+        // Mark unread messages received by me as read
+        $unreadMessages = $messages->where('receiver_id', $me)->where('is_read', false);
+        foreach ($unreadMessages as $msg) {
+            if (!$msg->reads->where('user_id', $me)->count()) {
+                $msg->reads()->create(['user_id' => $me, 'read_at' => now()]);
             }
+            $msg->update(['is_read' => true]);
         }
 
         return response()->json([
@@ -161,4 +169,26 @@ public function ajaxFriends(Request $request)
             'last_id' => optional($messages->last())->id ?? $lastId
         ]);
     }
+
+
+
+
+    // Route: GET /messages/read-status
+    public function readStatus(Request $request)
+    {
+        $me = auth()->id();
+        $ids = $request->ids ?? [];
+
+        // Fetch read status only for messages sent by the logged-in user
+        $statuses = Message::whereIn('id', $ids)
+            ->where('sender_id', $me)
+            ->pluck('is_read', 'id'); // returns [id => is_read]
+
+        return response()->json($statuses);
+    }
+
+
+
+
+
 }

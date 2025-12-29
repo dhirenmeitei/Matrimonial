@@ -1,5 +1,5 @@
 {{-- Friends List: Horizontal on mobile, Vertical on desktop --}}
-<div id="friendsList" class="d-flex flex-row flex-md-column overflow-auto mb-3" style="gap: 0.75rem;">
+<div id="friendsList" class="d-flex flex-row flex-md-column overflow-auto mb-3 p-4" style="gap: 0.75rem;">
 
     @forelse($users as $user)
         <div class="text-center position-relative flex-shrink-0" style="width: 70px;">
