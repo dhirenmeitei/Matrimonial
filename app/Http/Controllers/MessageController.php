@@ -11,16 +11,43 @@ use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
+    // public function index_old(Request $request)
+    // {
+    //     $users = User::where('id', '!=', auth()->id())
+    //         ->when($request->search, function ($query, $search) {
+    //             $query->where('username', 'like', '%' . $search . '%');
+    //         })
+    //         ->get();
+
+    //     return view('messages.index', compact('users'));
+    // }
     public function index(Request $request)
     {
-        $users = User::where('id', '!=', auth()->id())
-            ->when($request->search, function ($query, $search) {
-                $query->where('username', 'like', '%' . $search . '%');
+        $me = auth()->id();
+        $search = $request->search;
+
+        // Get users who have a conversation with me
+        $users = User::where('id', '!=', $me)
+            ->where(function ($q) use ($me) {
+                $q->whereIn('id', function ($sub) use ($me) {
+                    $sub->select('user_one')
+                        ->from('conversations')
+                        ->where('user_two', $me);
+                })
+                    ->orWhereIn('id', function ($sub) use ($me) {
+                        $sub->select('user_two')
+                            ->from('conversations')
+                            ->where('user_one', $me);
+                    });
+            })
+            ->when($search, function ($q) use ($search) {
+                $q->where('username', 'like', "%{$search}%");
             })
             ->get();
 
         return view('messages.index', compact('users'));
     }
+
 
     // AJAX friends search
     public function ajaxFriends(Request $request)

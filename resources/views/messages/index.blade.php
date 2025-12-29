@@ -5,39 +5,51 @@
     <h4 class="mb-3">Messages</h4>
 
     {{-- SEARCH FRIENDS --}}
-    <form method="GET" action="{{ route('messages.index') }}" class="mb-3 d-flex gap-2">
-        <input type="text" name="search" class="form-control" placeholder="Search friends..."
-            value="{{ request('search') }}">
-        <button class="btn btn-primary" type="submit">Search</button>
-    </form>
+    <div class="input-group mb-3">
+        <input type="text" id="friendSearch" class="form-control" placeholder="Search friends...">
+        <button class="btn btn-primary" type="button" id="searchBtn">Search</button>
+    </div>
 
-    {{-- FRIEND LIST HORIZONTAL SCROLL --}}
-    <div class="d-flex overflow-auto mb-3 p-4">
-        @forelse($users as $user)
-        <div class="text-center position-relative me-3">
-            <a href="{{ route('messages.show', $user->id) }}" class="btn btn-sm">
-            <img src="{{ $user->photo ? asset('storage/'.$user->photo) : asset('img/default-user.png') }}"
-                class="rounded-circle" width="60" height="60">
-
-            <div class="mt-1">{{ $user->username }}
-                
-                    <!-- <i class="bi bi-chat-quote-fill text-success"></i> -->
-                
-            </div>
-            </a>
-
-            @php
-            $unread = $user->unreadMessagesCount(auth()->id());
-            @endphp
-            @if($unread)
-            <span class="badge bg-primary position-absolute top-0 start-100 translate-middle">
-                {{ $unread }}
-            </span>
-            @endif
-        </div>
-        @empty
-        <p class="text-muted">No users found</p>
-        @endforelse
+    {{-- FRIEND LIST --}}
+    <div id="friendsList" class="d-flex overflow-auto mb-3 p-4">
+        @include('messages.partials.friends-list', ['users' => $users])
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('friendSearch');
+    const friendsList = document.getElementById('friendsList');
+    const searchBtn = document.getElementById('searchBtn');
+    let typingTimer;
+    const delay = 300; // ms
+
+    function fetchFriends(query) {
+        axios.get("{{ route('messages.ajax.friends') }}", { params: { search: query } })
+            .then(res => {
+                friendsList.innerHTML = res.data; // replace friend list with partial
+            })
+            .catch(err => console.error(err));
+    }
+
+    // Search while typing
+    searchInput.addEventListener('keyup', function() {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => fetchFriends(searchInput.value), delay);
+    });
+
+    // Search on button click
+    searchBtn.addEventListener('click', function() {
+        fetchFriends(searchInput.value);
+    });
+
+    // Enter key triggers search
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            fetchFriends(searchInput.value);
+        }
+    });
+});
+</script>
 @endsection

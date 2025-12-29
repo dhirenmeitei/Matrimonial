@@ -58,27 +58,27 @@ class TimelineController extends Controller
     //     return back();
     // }
     public function like($id)
-{
-    $like = PostLikeModel::where('post_id', $id)
-        ->where('user_id', auth()->id())
-        ->first();
+    {
+        $like = PostLikeModel::where('post_id', $id)
+            ->where('user_id', auth()->id())
+            ->first();
 
-    if ($like) {
-        $like->delete();
-        $liked = false;
-    } else {
-        PostLikeModel::create([
-            'post_id' => $id,
-            'user_id' => auth()->id()
+        if ($like) {
+            $like->delete();
+            $liked = false;
+        } else {
+            PostLikeModel::create([
+                'post_id' => $id,
+                'user_id' => auth()->id()
+            ]);
+            $liked = true;
+        }
+
+        return response()->json([
+            'liked' => $liked,
+            'count' => PostLikeModel::where('post_id', $id)->count()
         ]);
-        $liked = true;
     }
-
-    return response()->json([
-        'liked' => $liked,
-        'count' => PostLikeModel::where('post_id', $id)->count()
-    ]);
-}
 
 
     public function comment(Request $request, $id)
@@ -87,24 +87,54 @@ class TimelineController extends Controller
             'comment' => 'required|string'
         ]);
 
-        PostComment::create([
+        $comment = PostComment::create([
             'post_id' => $id,
             'user_id' => auth()->id(),
             'comment' => $request->comment
         ]);
 
-        return back();
+        // Load user relationship for blade/js
+        $comment->load('user');
+
+        return response()->json([
+            'success' => true,
+            'comment' => [
+                'id' => $comment->id,
+                'comment' => $comment->comment,
+                'user_id' => $comment->user_id,
+                'username' => $comment->user->username
+            ]
+        ]);
     }
 
+
+    // public function deleteComment(PostComment $comment)
+    // {
+    //     // Allow only comment owner
+    //     if ($comment->user_id !== auth()->id()) {
+    //         abort(403);
+    //     }
+
+    //     $comment->delete();
+
+    //     return back()->with('success', 'Comment deleted');
+    // }
     public function deleteComment(PostComment $comment)
     {
-        // Allow only comment owner
+        // Only comment owner can delete
         if ($comment->user_id !== auth()->id()) {
-            abort(403);
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
         }
 
         $comment->delete();
 
-        return back()->with('success', 'Comment deleted');
+        return response()->json([
+            'success' => true,
+            'comment_id' => $comment->id
+        ]);
     }
+
 }
