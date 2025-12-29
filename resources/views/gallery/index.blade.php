@@ -21,9 +21,9 @@
             <h1 class="display-5 mb-0">Latest Photos</h1>
         </div>
 
-        <div class="row g-5">
+        <div class="row g-4">
             @foreach($posts as $post)
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-3 col-md-4 col-sm-6"> {{-- four per row on large screens --}}
                     <div class="blog-item h-100">
 
                         {{-- Image --}}
@@ -37,7 +37,7 @@
                         {{-- Content --}}
                         <div class="bg-dark d-flex align-items-center rounded-bottom p-4">
 
-                            {{-- Likes & Comments --}}
+                            {{-- Date --}}
                             <div class="flex-shrink-0 text-center text-secondary border-end border-secondary pe-3 me-3">
                                 <span class="d-block fs-4 fw-bold text-light">
                                     {{ $post->created_at->format('d') }}
@@ -50,8 +50,7 @@
                                 </span>
                             </div>
 
-
-                            {{-- Link --}}
+                            {{-- Link & likes/comments --}}
                             <a href="{{ route('post.show', $post->id) }}" class="h5 lh-base text-light text-decoration-none">
                                 {{ $post->content }}
                                 <br>
