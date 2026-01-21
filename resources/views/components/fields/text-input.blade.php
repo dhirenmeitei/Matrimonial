@@ -5,9 +5,9 @@
     'readonly' => false, 
     'fieldClass' => '', 
     'required' => false, 
-    'showHide' => true
+    'showHide' => true,
+    'value' => null, // NEW: current value from DB
 ])
-
 {{-- Hide the field if showHide is false --}}
 @if($showHide)
 <div class="mb-3 {{ $fieldClass }}">
@@ -20,7 +20,7 @@
     <input
         type="text"
         name="{{ $name }}"
-        value="{{ old($name) }}"
+        value="{{ old($name, $value) }}" {{-- Use old() fallback to value, or empty if null --}}
         class="form-control"
         @if($readonly) readonly @endif
         @if($required) required @endif

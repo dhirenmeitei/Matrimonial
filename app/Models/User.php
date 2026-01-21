@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\Follow;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -17,10 +18,30 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+
     protected $fillable = [
         'name',
-        'email',
+        'surname',
+        'gender',
+        'dob',
+        'mobile_no',
+        'district',
+        'community',
+        'educational_qualification',
+        'photo',
+        'yek_salai',
+        'regis_terms_condition',
+        'username',
         'password',
+        'p_id',
+        'nationality',
+        'state',
+        'locality',
+        'pincode',
+        'identity_proof',
+        'occupation',
+        'email',
+        'introduction',
     ];
 
     /**
@@ -42,4 +63,94 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function posts()
+    {
+        return $this->hasMany(PostModel::class, 'user_id', 'id');
+    }
+
+    /**
+     * Users that THIS user follows
+     */
+    public function following()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'follows',
+            'follower_id',
+            'following_id'
+        );
+    }
+
+
+    /**
+     * Check if current user follows a given user
+     */
+    public function isFollowing($userId): bool
+    {
+        return $this->following()
+            ->where('following_id', $userId)
+            ->exists();
+    }
+
+    // Requests sent to me (pending)
+    public function followRequests()
+    {
+        return $this->hasMany(Follow::class, 'following_id')
+            ->where('status', 'pending');
+    }
+
+    // Accepted followers
+    public function followers()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'follows',
+            'following_id',
+            'follower_id'
+        )->wherePivot('status', 'accepted');
+    }
+
+    // Check follow status
+    public function followStatus($userId)
+    {
+        return Follow::where('follower_id', auth()->id())
+            ->where('following_id', $userId)
+            ->value('status'); // pending / accepted / null
+    }
+
+
+    // message
+    /**
+     * Get the count of unread messages from this user to the given user (usually auth user)
+     */
+    // public function unreadMessagesCount($authUserId)
+    // {
+    //     return $this->sentMessages()
+    //         ->whereDoesntHave('reads', function ($q) use ($authUserId) {
+    //             $q->where('user_id', $authUserId);
+    //         })
+    //         ->count();
+    // }
+    public function unreadMessagesCount($authUserId)
+{
+    return $this->sentMessages()
+        ->where('receiver_id', $authUserId)
+        ->where('is_read', false)
+        ->count();
+}
+
+
+    /**
+     * Relationship: Messages sent by this user
+     */
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class, 'receiver_id');
+    }
 }

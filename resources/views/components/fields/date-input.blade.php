@@ -5,7 +5,8 @@
     'readonly' => false, 
     'fieldClass' => '', 
     'required' => false, 
-    'showHide' => true
+    'showHide' => true,
+    'value' => null, // NEW: current value from DB
 ])
 
 {{-- Hide the field if showHide is false --}}
@@ -21,7 +22,7 @@
         type="date" 
         name="{{ $name }}" 
         class="form-control" 
-        value="{{ old($name) }}" 
+        value="{{ old($name, $value) }}" {{-- Use old() fallback to value, or empty if null --}} 
         @if($readonly) readonly @endif
         @if($required) required @endif
     >

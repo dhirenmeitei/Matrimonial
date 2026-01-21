@@ -4,7 +4,8 @@
     'name', 
     'fieldClass' => '', 
     'required' => false, 
-    'showHide' => true
+    'showHide' => true,
+    'value' => null, // current value from DB
 ])
 
 {{-- If showHide is false, hide the field --}}
@@ -15,7 +16,8 @@
         type="checkbox" 
         name="{{ $name }}" 
         id="{{ $name }}" 
-        {{ old($name) ? 'checked' : '' }}
+        value="1"
+        {{ old($name, $value) ? 'checked' : '' }} {{-- ✅ checked if old input or saved value --}}
         @if($required) required @endif
     >
     <label class="form-check-label" for="{{ $name }}">
